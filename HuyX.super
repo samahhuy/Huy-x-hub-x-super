@@ -1,0 +1,143 @@
+--[[
+    HUY HUB - ULTIMATE ACTIVATOR (FIXED)
+    ID Logo: 106854869073126
+]]
+
+local p = game.Players.LocalPlayer
+local c = workspace.CurrentCamera
+local f, s, ws = false, 100, 16
+local v, g = nil, nil
+local godEnabled = false
+
+-- 1. HỆ THỐNG KIỂM TRA & KÍCH HOẠT (ANTI-LAG)
+local function GetGuiParent()
+    local success, _ = pcall(function() return game:GetService("CoreGui") end)
+    if success then return game:GetService("CoreGui") end
+    return p:WaitForChild("PlayerGui")
+end
+
+local Parent = GetGuiParent()
+if Parent:FindFirstChild("HuyHub_Final") then Parent.HuyHub_Final:Destroy() end
+
+local sg = Instance.new("ScreenGui", Parent)
+sg.Name = "HuyHub_Final"
+sg.ResetOnSpawn = false
+
+-- 2. LOGO BO TRÒN (ROUNDED)
+local LogoBtn = Instance.new("ImageButton", sg)
+LogoBtn.Size = UDim2.new(0, 60, 0, 60)
+LogoBtn.Position = UDim2.new(0, 20, 0.5, -30)
+LogoBtn.BackgroundTransparency = 0.3
+LogoBtn.BackgroundColor3 = Color3.new(0, 0, 0)
+LogoBtn.BorderSizePixel = 0
+LogoBtn.ZIndex = 10
+
+local Corner = Instance.new("UICorner", LogoBtn)
+Corner.CornerRadius = UDim.new(0.25, 0) -- Bo tròn góc vừa phải
+
+-- Ép tải hình ảnh
+local imageID = "106854869073126"
+LogoBtn.Image = "rbxassetid://" .. imageID
+-- Dự phòng nếu Image ID chưa đổi từ Decal ID
+task.spawn(function()
+    LogoBtn.Image = "https://www.roblox.com/asset-thumbnail/image?assetId="..imageID.."&width=420&height=420&format=png"
+end)
+
+-- 3. THANH LỆNH (Huy X hub)
+local m = Instance.new("Frame", sg)
+m.Size, m.Position, m.Active, m.BackgroundColor3 = UDim2.new(0, 180, 0, 35), UDim2.new(0.5, -90, 0.8, 0), true, Color3.new(0, 0, 0)
+m.Visible = true
+Instance.new("UICorner", m).CornerRadius = UDim.new(0.3, 0)
+
+local i = Instance.new("TextBox", m)
+i.Size, i.Position, i.PlaceholderText, i.Text, i.BackgroundTransparency, i.TextColor3 = UDim2.new(1, -40, 1, 0), UDim2.new(0, 40, 0, 0), "Huy X hub...", "", 1, Color3.new(1, 1, 1)
+
+local dbtn = Instance.new("TextButton", m)
+dbtn.Size, dbtn.Text, dbtn.BackgroundTransparency, dbtn.TextColor3 = UDim2.new(0, 35, 1, 0), "☰", 1, Color3.new(1, 1, 1)
+dbtn.TextSize = 22
+
+-- 4. LOGIC KÉO THẢ (FIX MƯỢT CHO ĐIỆN THOẠI & PC)
+local uis = game:GetService("UserInputService")
+local drag, dragL, start, mPos
+
+LogoBtn.MouseButton1Click:Connect(function() m.Visible = not m.Visible end)
+
+local function update(input)
+    local delta = input.Position - start
+    if drag then
+        m.Position = UDim2.new(mPos.X.Scale, mPos.X.Offset + delta.X, mPos.Y.Scale, mPos.Y.Offset + delta.Y)
+    elseif dragL then
+        LogoBtn.Position = UDim2.new(mPos.X.Scale, mPos.X.Offset + delta.X, mPos.Y.Scale, mPos.Y.Offset + delta.Y)
+    end
+end
+
+LogoBtn.InputBegan:Connect(function(inp)
+    if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
+        dragL, start, mPos = true, inp.Position, LogoBtn.Position
+    end
+end)
+
+dbtn.InputBegan:Connect(function(inp)
+    if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
+        drag, start, mPos = true, inp.Position, m.Position
+    end
+end)
+
+uis.InputChanged:Connect(function(inp)
+    if (drag or dragL) and (inp.UserInputType == Enum.UserInputType.MouseMovement or inp.UserInputType == Enum.UserInputType.Touch) then
+        update(inp)
+    end
+end)
+
+uis.InputEnded:Connect(function(inp)
+    if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
+        drag, dragL = false, false
+    end
+end)
+
+-- 5. CHỨC NĂNG FLY/GOD GỐC
+local function T(st, sp)
+    f = st
+    local ch = p.Character
+    if v then v:Destroy() end
+    if g then g:Destroy() end
+    v, g = nil, nil
+    if st and ch and ch:FindFirstChild("HumanoidRootPart") then
+        s = sp or 100
+        ch.Humanoid.PlatformStand = true
+        v, g = Instance.new("BodyVelocity", ch.HumanoidRootPart), Instance.new("BodyGyro", ch.HumanoidRootPart)
+        v.MaxForce, g.MaxTorque = Vector3.new(1e7,1e7,1e7), Vector3.new(1e7,1e7,1e7)
+    elseif ch and ch:FindFirstChild("Humanoid") then
+        ch.Humanoid.PlatformStand = false
+    end
+end
+
+i.FocusLost:Connect(function(e)
+    if e then
+        local a = i.Text:lower()
+        if a:find("unfly") then T(false)
+        elseif a:find("fly") then T(true, tonumber(a:match("%d+")))
+        elseif a:find("speed") then ws = tonumber(a:match("%d+")) or 16 s = ws
+        elseif a:find("god") then godEnabled = true
+        elseif a:find("ungod") then godEnabled = false end
+        i.Text = ""
+    end
+end)
+
+game:GetService("RunService").RenderStepped:Connect(function()
+    if p.Character and p.Character:FindFirstChild("Humanoid") then
+        local hum = p.Character.Humanoid
+        hum.WalkSpeed = ws
+        if godEnabled then hum.Health = hum.MaxHealth hum.BreakJointsOnDeath = false end
+        if f and v then
+            local cam = c.CFrame
+            if hum.MoveDirection.Magnitude > 0 then
+                v.Velocity = ((cam.LookVector * hum.MoveDirection:Dot(cam.LookVector)) + (cam.RightVector * hum.MoveDirection:Dot(cam.RightVector))).Unit * s
+            else
+                v.Velocity = Vector3.new(0, 0, 0)
+            end
+            g.CFrame = cam
+        end
+    end
+end)
+
